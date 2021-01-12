@@ -1,0 +1,64 @@
+font.family  : monospace
+font.size    : 17.0
+
+font.monospace  : Ubuntu Mono, DejaVu Sans Mono, Andale Mono, monospace
+
+lines.linewidth : 2
+
+axes.grid          : True   ## display grid or not
+#axes.grid.axis     : both    ## which axis the grid should apply to
+#axes.grid.which    : major   ## gridlines at {major, minor, both} ticks
+axes.titlesize     : 26   ## fontsize of the axes title
+axes.titlepad      : 18     ## pad between axes and title in points
+axes.labelsize     : 25  ## fontsize of the x any y labels
+axes.labelpad      : 17     ## space between label and axis
+axes.xmargin   : .1
+axes.ymargin   : .1
+
+xtick.labelsize     : 24  ## fontsize of the tick labels
+
+ytick.labelsize     : 24  
+
+#grid.color     : b0b0b0  
+#grid.linestyle : -       ## solid
+#grid.linewidth : 0.8     ## in points
+grid.alpha     : 0.4
+
+## legend
+legend.framealpha    : 0.7      ## legend patch transparency
+legend.fontsize      : 21
+
+## figure size
+figure.figsize     : 14.0, 9.0  ## figure size in inches
+figure.dpi         : 100       ## figure dots per inch
+
+## The figure subplot parameters.  All dimensions are a fraction of the figure width and height.
+figure.subplot.left   : 0.11  ## the left side of the subplots of the figure
+figure.subplot.right  : 0.94    ## the right side of the subplots of the figure
+figure.subplot.bottom : 0.12   ## the bottom of the subplots of the figure
+figure.subplot.top    : 0.90   ## the top of the subplots of the figure
+figure.subplot.wspace : 0.16    
+figure.subplot.hspace : 0.3
+
+hist.bins : 30 ## or 'auto'
+
+
+## ***************************************************************************
+## * DATES                                                                   *
+## ***************************************************************************
+## These control the default format strings used in AutoDateFormatter.
+## Any valid format datetime format string can be used (see the python
+## `datetime` for details).  For example, by using:
+##     - '%%x' will use the locale date representation
+##     - '%%X' will use the locale time representation
+##     - '%%c' will use the full locale datetime representation
+## These values map to the scales:
+##     {'year': 365, 'month': 30, 'day': 1, 'hour': 1/24, 'minute': 1 / (24 * 60)}
+
+#date.autoformatter.year        : %Y
+#date.autoformatter.month       : %Y-%m
+#date.autoformatter.day         : %Y-%m-%d
+#date.autoformatter.hour        : %m-%d %H
+#date.autoformatter.minute      : %d %H:%M
+#date.autoformatter.second      : %H:%M:%S
+#date.autoformatter.microsecond : %M:%S.%f
