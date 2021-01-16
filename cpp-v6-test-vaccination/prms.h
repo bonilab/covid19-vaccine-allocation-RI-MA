@@ -18,7 +18,7 @@ enum parameter_index {i_N, i_beta, i_startday_beta, i_endday_beta, i_beta_hosp, 
                       i_vac1_eff_halflife, i_vac1_eff_slope, i_vac2_eff_halflife, i_vac2_eff_slope,
                       i_vac1_eff_halflife_pow_slope, i_vac2_eff_halflife_pow_slope, 
                       i_vac1_foi, i_vac2_foi,
-                      i_len_natural_immunity, i_reporting_rate,
+                      i_len_natural_immunity,
                       num_params}; 
 
 typedef enum parameter_index prm_index;

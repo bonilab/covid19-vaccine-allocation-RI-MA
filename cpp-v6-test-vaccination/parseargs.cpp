@@ -102,9 +102,10 @@ extern double G_CLO_VENTDEATH_70_DEV;
 extern double G_CLO_VENTDEATH_80_DEV;
 extern double G_CLO_MEANTIME_ON_VENT_SURV;
 extern double G_CLO_RELATIVE_BETA_HOSP;
+
 extern double G_CLO_DEV_LEN_HOSPSTAY;
+
 extern double G_CLO_LEN_NAT_IMMU;
-extern double G_CLO_REPORTING_RATE;
 
 
 extern int G_CLO_NORMALCY_BEGINDAY;
@@ -536,9 +537,6 @@ void ParseArgs(int argc, char **argv)
 
         // natural immunity
         else if( str == "-len-nat-immunity" )       {        G_CLO_LEN_NAT_IMMU = atof( argv[++i] );      }
-
-        // reporting rate, to be used in distributing vaccines to R-class (among previously asymptomatic cases)
-        else if( str == "-rr" )                     {        G_CLO_REPORTING_RATE = atof( argv[++i] );      }
         
         /////////////////////////
         // vaccination
@@ -1117,36 +1115,6 @@ void ParseArgs(int argc, char **argv)
         else if( str == "-vac1-phase2-beginday" )    {        G_CLO_VAC_1_PHASE2_BEGINDAY = atoi( argv[++i] );       }
         else if( str == "-vac1-phase2-endday" )      {        G_CLO_VAC_1_PHASE2_ENDDAY = atoi( argv[++i] );         }
 
-
-        /* else if( str == "-vac2-foi")                 {        G_CLO_VAC_2_FOI = atof( argv[++i] );      }
-        else if( str == "-vac2-protect-duration" )   {        G_CLO_VAC_2_PROTECT_DURATION = atof( argv[++i] );      }
-        else if( str == "-vac2-efficacy-halflife" )  {        G_CLO_VAC_2_EFF_HALFLIFE = atof( argv[++i] );          }
-        else if( str == "-vac2-efficacy-slope" )     {        G_CLO_VAC_2_EFF_SLOPE = atof( argv[++i] );             }
-        else if( str == "-vac2-phase1-beginday" )    {        G_CLO_VAC_2_PHASE1_BEGINDAY = atoi( argv[++i] );       }
-        else if( str == "-vac2-phase1-endday" )      {        G_CLO_VAC_2_PHASE1_ENDDAY = atoi( argv[++i] );         }
-        else if( str == "-vac2-phase1-dpd" )         {        G_CLO_VAC_2_PHASE1_DPD = atoi( argv[++i] );            }
-        else if( str == "-vac2-phase2-beginday" )    {        G_CLO_VAC_2_PHASE2_BEGINDAY = atoi( argv[++i] );       }
-        else if( str == "-vac2-phase2-endday" )      {        G_CLO_VAC_2_PHASE2_ENDDAY = atoi( argv[++i] );         }
-        // else if( str == "-vac2-frac-00" )   {           G_CLO_VAC_2_FRAC_00 = atof( argv[++i] );              }
-        else if( str == "-vac2-frac-10" )   {           G_CLO_VAC_2_FRAC_10 = atof( argv[++i] );              }
-        else if( str == "-vac2-frac-20" )   {           G_CLO_VAC_2_FRAC_20 = atof( argv[++i] );              }
-        else if( str == "-vac2-frac-30" )   {           G_CLO_VAC_2_FRAC_30 = atof( argv[++i] );              }
-        else if( str == "-vac2-frac-40" )   {           G_CLO_VAC_2_FRAC_40 = atof( argv[++i] );              }
-        else if( str == "-vac2-frac-50" )   {           G_CLO_VAC_2_FRAC_50 = atof( argv[++i] );              }
-        else if( str == "-vac2-frac-60" )   {           G_CLO_VAC_2_FRAC_60 = atof( argv[++i] );              }
-        else if( str == "-vac2-frac-70" )   {           G_CLO_VAC_2_FRAC_70 = atof( argv[++i] );              }
-        else if( str == "-vac2-frac-80" )   {           G_CLO_VAC_2_FRAC_80 = atof( argv[++i] );              }
-        // relative efficacies
-        else if( str == "-vac2-rel-eff-00" )   {          G_CLO_VAC_2_REL_EFF_00 = atof( argv[++i] );              }
-        else if( str == "-vac2-rel-eff-10" )   {          G_CLO_VAC_2_REL_EFF_10 = atof( argv[++i] );              }
-        else if( str == "-vac2-rel-eff-20" )   {          G_CLO_VAC_2_REL_EFF_20 = atof( argv[++i] );              }
-        else if( str == "-vac2-rel-eff-30" )   {          G_CLO_VAC_2_REL_EFF_30 = atof( argv[++i] );              }
-        else if( str == "-vac2-rel-eff-40" )   {          G_CLO_VAC_2_REL_EFF_40 = atof( argv[++i] );              }
-        else if( str == "-vac2-rel-eff-50" )   {          G_CLO_VAC_2_REL_EFF_50 = atof( argv[++i] );              }
-        else if( str == "-vac2-rel-eff-60" )   {          G_CLO_VAC_2_REL_EFF_60 = atof( argv[++i] );              }
-        else if( str == "-vac2-rel-eff-70" )   {          G_CLO_VAC_2_REL_EFF_70 = atof( argv[++i] );              }
-        else if( str == "-vac2-rel-eff-80" )   {          G_CLO_VAC_2_REL_EFF_80 = atof( argv[++i] );              } */
-
         // coefficient for lockdown contact matrix
         else if( str == "-contact-coeff-00" )   {           G_CLO_CONTACT_COEFF_00 = atof( argv[++i] );              }
         else if( str == "-contact-coeff-10" )   {           G_CLO_CONTACT_COEFF_10 = atof( argv[++i] );              }
@@ -1248,13 +1216,6 @@ void ParseArgs(int argc, char **argv)
         fprintf(stderr, "\n\tCheck begin and end days for the two phases of deployment of high-efficacy vaccine.\n\n");
         exit(-1);
     } */
-    if ( G_CLO_REPORTING_RATE > 0.0 && G_CLO_REPORTING_RATE <= 1.0  ){
-             // do nothing
-    } else
-    {
-        fprintf(stderr, "\n\tCheck reporting rate. It must be within (0.0, 1.0].\n\n");
-        exit(-1);
-    }
 
     // ### 5a ### check equal length v_begin_days_phase1_vac1, v_end_days_phase1_vac1, v_dpd_phase1_vac1
     if ( ppc->v_begin_days_phase1_vac1.size() == ppc->v_end_days_phase1_vac1.size() && 

@@ -132,7 +132,6 @@ bool G_B_REMOVE_99COLUMNS = false;
 bool G_B_BINARY_OUTPUT = false;
 bool G_B_DEATHRATE_OUTPUT = false;
 
-double G_CLO_REPORTING_RATE = 1.0;
 
 int G_CLO_NORMALCY_BEGINDAY = 1098;       // January 02, 2023
 
@@ -150,20 +149,8 @@ double G_CLO_VAC_1_FOI = 0.001; // force-of-infection when vaccine 1 trial was d
 double G_CLO_VAC_1_PROTECT_DURATION = 360.0;
 double G_CLO_VAC_1_EFF_HALFLIFE = G_CLO_VAC_1_PROTECT_DURATION / 2.0;
 double G_CLO_VAC_1_EFF_SLOPE = 5.0;
-// int G_CLO_VAC_1_PHASE1_BEGINDAY = 350; // phase 1: vaccine roll-out campaign
-// int G_CLO_VAC_1_PHASE1_ENDDAY = 365;
-// int G_CLO_VAC_1_PHASE1_DPD = 0; // dose-per-day
 int G_CLO_VAC_1_PHASE2_BEGINDAY = 1450; // phase 2: routine vaccination
 int G_CLO_VAC_1_PHASE2_ENDDAY = 2000;
-// double G_CLO_VAC_1_FRAC_00 = 0.0;
-// double G_CLO_VAC_1_FRAC_10 = 0.0;
-// double G_CLO_VAC_1_FRAC_20 = 0.0;
-// double G_CLO_VAC_1_FRAC_30 = 0.0;
-// double G_CLO_VAC_1_FRAC_40 = 0.0;
-// double G_CLO_VAC_1_FRAC_50 = 0.0;
-// double G_CLO_VAC_1_FRAC_60 = 0.0;
-// double G_CLO_VAC_1_FRAC_70 = 0.0;
-// double G_CLO_VAC_1_FRAC_80 = 0.0;
 // relative efficacy for each age group
 double G_CLO_VAC_1_REL_EFF_00 = 1.0;
 double G_CLO_VAC_1_REL_EFF_10 = 1.0;
@@ -334,7 +321,6 @@ int main(int argc, char* argv[])
     ppc->v[ i_len_medicalfloor_hospital_stay ]              = 10.7 * G_CLO_DEV_LEN_HOSPSTAY; //   take from Lewnard et al, survivors only
     ppc->v[ i_len_natural_immunity ]                        = G_CLO_LEN_NAT_IMMU; 
     ppc->v[ i_mean_time_vent ]                              = G_CLO_MEANTIME_ON_VENT_SURV;   //   mean time on ventilator for survivors
-    ppc->v[ i_reporting_rate ]                              = G_CLO_REPORTING_RATE;          //   reporting rate to be used when distributing vaccines to R-class
     
     
     // params below are for relative infectiousness of certain individuals; I1 and I2 individuals have infectiousness = 1.0
@@ -618,18 +604,6 @@ int main(int argc, char* argv[])
     ppc->v_prob_CR_D[7] = 1.0*G_CLO_DEATHPROB_POSTVENT;
     ppc->v_prob_CR_D[8] = 2.0*G_CLO_DEATHPROB_POSTVENT;
     
-
-    // vaccination fraction
-    // ppc->v_prob_S_Z_1[0] = 1.0 - (G_CLO_VAC_1_FRAC_10 + G_CLO_VAC_1_FRAC_20 + G_CLO_VAC_1_FRAC_30 + G_CLO_VAC_1_FRAC_40 + G_CLO_VAC_1_FRAC_50 + G_CLO_VAC_1_FRAC_60 + G_CLO_VAC_1_FRAC_70 + G_CLO_VAC_1_FRAC_80);    
-    // ppc->v_prob_S_Z_1[1] = G_CLO_VAC_1_FRAC_10;
-    // ppc->v_prob_S_Z_1[2] = G_CLO_VAC_1_FRAC_20;
-    // ppc->v_prob_S_Z_1[3] = G_CLO_VAC_1_FRAC_30;    
-    // ppc->v_prob_S_Z_1[4] = G_CLO_VAC_1_FRAC_40;
-    // ppc->v_prob_S_Z_1[5] = G_CLO_VAC_1_FRAC_50;
-    // ppc->v_prob_S_Z_1[6] = G_CLO_VAC_1_FRAC_60;
-    // ppc->v_prob_S_Z_1[7] = G_CLO_VAC_1_FRAC_70;
-    // ppc->v_prob_S_Z_1[8] = G_CLO_VAC_1_FRAC_80;
-    // if (ppc->v_prob_S_Z_1[0] < 0.000001) { ppc->v_prob_S_Z_1[0] = 0.0; }
     
     // fill v_vac_ratios_phase1_vac1 for age group 0-9 if needed
     for (size_t i = 0; i < ppc->v_vac_ratios_phase1_vac1[8].size(); i++){
@@ -660,17 +634,6 @@ int main(int argc, char* argv[])
         ppc->v_vac_fracs_phase1_vac1[0].push_back( tmp );
     }
     
-
-    /* ppc->v_prob_S_Z_2[0] = 1.0 - (G_CLO_VAC_2_FRAC_10 + G_CLO_VAC_2_FRAC_20 + G_CLO_VAC_2_FRAC_30 + G_CLO_VAC_2_FRAC_40 + G_CLO_VAC_2_FRAC_50 + G_CLO_VAC_2_FRAC_60 + G_CLO_VAC_2_FRAC_70 + G_CLO_VAC_2_FRAC_80); 
-    ppc->v_prob_S_Z_2[1] = G_CLO_VAC_2_FRAC_10;
-    ppc->v_prob_S_Z_2[2] = G_CLO_VAC_2_FRAC_20;
-    ppc->v_prob_S_Z_2[3] = G_CLO_VAC_2_FRAC_30;    
-    ppc->v_prob_S_Z_2[4] = G_CLO_VAC_2_FRAC_40;
-    ppc->v_prob_S_Z_2[5] = G_CLO_VAC_2_FRAC_50;
-    ppc->v_prob_S_Z_2[6] = G_CLO_VAC_2_FRAC_60;
-    ppc->v_prob_S_Z_2[7] = G_CLO_VAC_2_FRAC_70;
-    ppc->v_prob_S_Z_2[8] = G_CLO_VAC_2_FRAC_80;
-    if (ppc->v_prob_S_Z_2[0] < 0.000001) { ppc->v_prob_S_Z_2[0] = 0.0; } */
     
     // relative effiacy for each age group
     ppc->v_rel_eff_Z_1[0] = G_CLO_VAC_1_REL_EFF_00;

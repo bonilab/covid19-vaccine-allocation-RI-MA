@@ -445,28 +445,6 @@ void generate_trajectories( double inital_number_of_cases, double param_beta, do
                     // printf("\n%d calc number_to_Z FRAC %f\n", ac, ppc->v_number_to_Z_1_phase1[ac]);
                 }
 
-                /* if (G_B_USE_VAC_RATIO){
-                    min_vac_frac_1 = 1.0;
-                    sum_weighted_vac_frac_1 = 0.0;
-
-                    // index for current day in v_begin_days_phase1_vac1 vector
-                    // if v_vac_ratios_phase1_vac1 vector is shorter than v_begin_days_phase1_vac1 vector, use the last elements in v_vac_ratios_phase1_vac1
-                    int icd = (ppc->index_current_day_phase1_vac1 < ppc->v_vac_ratios_phase1_vac1[0].size()) ? ppc->index_current_day_phase1_vac1 : (ppc->v_vac_ratios_phase1_vac1[0].size() - 1);
-                    
-                    // find min vac_frac
-                    for (ac = 0; ac < NUMAC; ac++) {
-                        if (ppc->v_vac_ratios_phase1_vac1[ac][icd] > 0.0) { min_vac_frac_1 = Min(min_vac_frac_1, ppc->v_vac_ratios_phase1_vac1[ac][icd]); }
-                    }
-                    // sum of weighted vac frac * pop frac
-                    for (ac =0; ac < NUMAC; ac++){
-                        sum_weighted_vac_frac_1 += ppc->v_vac_ratios_phase1_vac1[ac][icd] * ppc->v_pop_frac[ac] / min_vac_frac_1;
-                    }
-                    for (ac = 0; ac < NUMAC; ac++){
-                        if (ppc->v_number_to_Z_1_phase1[ac] < 1.0){
-                            ppc->v_number_to_Z_1_phase1[ac] = (ppc->v_dpd_phase1_vac1[ppc->index_current_day_phase1_vac1] * ppc->v_vac_ratios_phase1_vac1[ac][icd] * ppc->v_pop_frac[ac]) / (min_vac_frac_1 * sum_weighted_vac_frac_1 *  steps_per_day); // proportional to pop frac
-                        }
-                    }
-                } */
             }
 
             if (!G_B_USE_VAC_FRAC && G_B_USE_VAC_RATIO){
@@ -524,47 +502,10 @@ void generate_trajectories( double inital_number_of_cases, double param_beta, do
         if (b_vac1_phase1_began && (tt + DBL_EPSILON) >= next_beginday_vac1_phase1 && tt < (next_endday_vac1_phase1 + 1.0)){
             // printf("%f - %f\n", tt, each_step_total_S_Z_1_phase1);
             double total_S_Z = 0.0, total_to_Z_next = each_step_total_S_Z_1_phase1;
-            double tmp = 0.0, frac_R = 1.0; 
+            double tmp = 0.0; 
             double sub_pop = 0.0, sub_pop_next = 0.0; // to determine vac_frac for the unused doses
             for (int ac = 0; ac < NUMAC; ac++){
-                if ( G_B_TEST_BEFORE_VACCINATE ){ frac_R = 1.0 - (1.0 - ppc->v_prob_E_A[ac])*ppc->v[ i_reporting_rate ]; } 
-                else { frac_R = 1.0; }
-
-                if (ppc->v_number_to_Z_1_phase1[ac] > (1.0 - DBL_EPSILON)){
-                    double sum_SEAR = floor(yic[ac]) + floor(yic[STARTR + ac] *frac_R) ;
-                    for (size_t i = 0; i < NUME; i++) {         sum_SEAR += floor(yic[STARTE  + i*NUMAC + ac]);  }
-                    for (size_t i = 0; i < NUMA; i++) {         sum_SEAR += floor(yic[STARTA  + i*NUMAC + ac]);  }
-                    for (size_t i = 0; i < NUMRR; i++){         sum_SEAR += floor(yic[STARTRR + i*NUMAC + ac] *frac_R);  }
-                    // double sum_SEARRh = yic[ac] + yic[STARTR + ac] + yic[STARTRHOSP + ac];
-                    // for (size_t i = 0; i < NUMRRHOSP; i++){     sum_SEARRh += yic[STARTRRHOSP + i*NUMAC + ac];  }
-                    // sum_SEAR = floor(sum_SEAR);
-
-                    if (sum_SEAR < ppc->v_number_to_Z_1_phase1[ac]){
-                        tmp = 1.0;
-                    } else {
-                        tmp = ppc->v_number_to_Z_1_phase1[ac] / sum_SEAR;
-                        // sub_pop_next += ppc->v_pop_frac[ac];
-                        // b_done_vac_frac_1 = false;
-                    }
-
-                    // if (tmp * sum_SEAR >= 1.0){
-                        yic[STARTJZ_1 + ac] += tmp * sum_SEAR;                     // count all vaccine doses being given out
-
-                        yic[STARTZ_1 + ac]  += tmp * (floor(yic[ac]) + floor(yic[STARTR + ac] *frac_R)); // but only S and R move to Z 
-                        yic[ac]             -= tmp *  floor(yic[ac]         ) ;
-                        yic[STARTR + ac]    -= tmp *  floor(yic[STARTR + ac] *frac_R) ;
-                        // for (size_t i = 0; i < NUME; i++){          yic[STARTE + i*NUMAC + ac]      -= yic[STARTE + i*NUMAC + ac]       * tmp ;  } // E and A stay in their classes
-                        // for (size_t i = 0; i < NUMA; i++){          yic[STARTA + i*NUMAC + ac]      -= yic[STARTA + i*NUMAC + ac]       * tmp ;  }
-                        for (size_t i = 0; i < NUMRR; i++){   
-                            yic[STARTZ_1 + ac]              += tmp * floor(yic[STARTRR + i*NUMAC + ac] *frac_R)  ;
-                            yic[STARTRR + i*NUMAC + ac]     -= tmp * floor(yic[STARTRR + i*NUMAC + ac] *frac_R)  ;  
-                        }
-                    // }
-                    total_to_Z_next      -= tmp * sum_SEAR;
-                    ppc->v_already_moved_to_Z_1_phase1[ac] = tmp * sum_SEAR;
-                }
-                
-                /* if ( G_B_TEST_BEFORE_VACCINATE ) // test before vaccinating --> equal chance for S, E, A to be vaccinated. S will move to Z; E and A will stay in their classes
+                if ( G_B_TEST_BEFORE_VACCINATE ) // test before vaccinating --> equal chance for S, E, A to be vaccinated. S will move to Z; E and A will stay in their classes
                 {
                     if (ppc->v_number_to_Z_1_phase1[ac] > (1.0 - DBL_EPSILON)){
                         double sum_SEA = floor(yic[ac]);
@@ -598,10 +539,10 @@ void generate_trajectories( double inital_number_of_cases, double param_beta, do
                 else // no test before vaccinating --> equal chance for S, E, A, R to be vaccinated. S and R will move to Z; E and A will stay in their classes
                 {
                     if (ppc->v_number_to_Z_1_phase1[ac] > (1.0 - DBL_EPSILON)){
-                        double sum_SEAR = floor(yic[ac]) + floor(yic[STARTR + ac] *frac_R) ;
+                        double sum_SEAR = floor(yic[ac]) + floor(yic[STARTR + ac]) ;
                         for (size_t i = 0; i < NUME; i++){          sum_SEAR += floor(yic[STARTE + i*NUMAC + ac]);  }
                         for (size_t i = 0; i < NUMA; i++){          sum_SEAR += floor(yic[STARTA + i*NUMAC + ac]);  }
-                        for (size_t i = 0; i < NUMRR; i++){         sum_SEAR += floor(yic[STARTRR + i*NUMAC + ac] *frac_R);  }
+                        for (size_t i = 0; i < NUMRR; i++){         sum_SEAR += floor(yic[STARTRR + i*NUMAC + ac]);  }
                         // double sum_SEARRh = yic[ac] + yic[STARTR + ac] + yic[STARTRHOSP + ac];
                         // for (size_t i = 0; i < NUMRRHOSP; i++){     sum_SEARRh += yic[STARTRRHOSP + i*NUMAC + ac];  }
                         // sum_SEAR = floor(sum_SEAR);
@@ -615,22 +556,22 @@ void generate_trajectories( double inital_number_of_cases, double param_beta, do
                         }
 
                         // if (tmp * sum_SEAR >= 1.0){
-                            yic[STARTJZ_1 + ac] += tmp * sum_SEAR;                     // count all vaccine doses being given out
+                            yic[STARTZ_1 + ac]  += tmp * (floor(yic[ac]) + floor(yic[STARTR + ac])); // only S and R move to Z 
+                            yic[STARTJZ_1 + ac] += tmp * sum_SEAR;                     // but count all vaccine doses being given out
 
-                            yic[STARTZ_1 + ac]  += tmp * (floor(yic[ac]) + floor(yic[STARTR + ac] *frac_R)); // but only S and R move to Z 
-                            yic[ac]             -= tmp *  floor(yic[ac]         ) ;
-                            yic[STARTR + ac]    -= tmp *  floor(yic[STARTR + ac] *frac_R) ;
+                            yic[ac]              -= tmp * floor(yic[ac]         ) ;
+                            yic[STARTR + ac]     -= tmp * floor(yic[STARTR + ac]) ;
                             // for (size_t i = 0; i < NUME; i++){          yic[STARTE + i*NUMAC + ac]      -= yic[STARTE + i*NUMAC + ac]       * tmp ;  } // E and A stay in their classes
                             // for (size_t i = 0; i < NUMA; i++){          yic[STARTA + i*NUMAC + ac]      -= yic[STARTA + i*NUMAC + ac]       * tmp ;  }
                             for (size_t i = 0; i < NUMRR; i++){   
-                                yic[STARTZ_1 + ac]              += tmp * floor(yic[STARTRR + i*NUMAC + ac] *frac_R)  ;
-                                yic[STARTRR + i*NUMAC + ac]     -= tmp * floor(yic[STARTRR + i*NUMAC + ac] *frac_R)  ;  
+                                yic[STARTZ_1 + ac]              += tmp * floor(yic[STARTRR + i*NUMAC + ac])  ;
+                                yic[STARTRR + i*NUMAC + ac]     -= tmp * floor(yic[STARTRR + i*NUMAC + ac])  ;  
                             }
                         // }
                         total_to_Z_next      -= tmp * sum_SEAR;
                         ppc->v_already_moved_to_Z_1_phase1[ac] = tmp * sum_SEAR;
                     }
-                } */
+                }
             } 
             
             //
@@ -658,56 +599,8 @@ void generate_trajectories( double inital_number_of_cases, double param_beta, do
                     sub_pop = sub_pop_next;
                     total_S_Z = total_to_Z_next;
                     for (ac = 0; ac < NUMAC; ac++){
-                        if ( G_B_TEST_BEFORE_VACCINATE ){ frac_R = 1.0 - (1.0 - ppc->v_prob_E_A[ac])*ppc->v[ i_reporting_rate ]; } 
-                        else { frac_R = 1.0; }
-
-                        if (ppc->v_number_to_Z_1_phase1[ac] > (1.0 - DBL_EPSILON)){
-                        // if (ppc->v_number_to_Z_1_phase1[ac] > 0.9 && ppc->v_already_moved_to_Z_1_phase1[ac] == ppc->v_number_to_Z_1_phase1[ac] ){
-                            // tmp = total_S_Z * ppc->v_pop_frac[ac] / sub_pop; // max vaccines to be randomly distributed to this age group
-                            tmp = total_S_Z / sub_pop; // max vaccines to be randomly distributed to this age group
-
-                            double sum_SEAR = floor(yic[ac]) + floor(yic[STARTR + ac] *frac_R) ;
-                            for (size_t i = 0; i < NUME; i++) {          sum_SEAR += floor(yic[STARTE + i*NUMAC + ac]);  }
-                            for (size_t i = 0; i < NUMA; i++) {          sum_SEAR += floor(yic[STARTA + i*NUMAC + ac]);  }
-                            for (size_t i = 0; i < NUMRR; i++){          sum_SEAR += floor(yic[STARTRR + i*NUMAC + ac] *frac_R);  }
-                            // double sum_SEARRh = yic[ac] + yic[STARTR + ac] + yic[STARTRHOSP + ac];
-                            // for (size_t i = 0; i < NUMRRHOSP; i++){     sum_SEARRh += yic[STARTRRHOSP + i*NUMAC + ac];  }
-                            // sum_SEAR = floor(sum_SEAR);
-
-                            if (sum_SEAR < tmp){
-                                tmp = 1.0;
-                                // sub_pop_next -= ppc->v_pop_frac[ac];
-                            } else {
-                                tmp = tmp / sum_SEAR;
-                            }
-
-                            if (tmp * sum_SEAR < (1.0 - DBL_EPSILON)){
-                                // sub_pop_next -= ppc->v_pop_frac[ac];
-                                sub_pop_next -= 1;
-                            } else {
-                                ppc->v_already_moved_to_Z_1_phase1[ac] += tmp * sum_SEAR;
-
-                                yic[STARTJZ_1 + ac] += tmp * sum_SEAR;                      // count all vaccine doses being given out
-
-                                yic[STARTZ_1 + ac]  += tmp * (floor(yic[ac]) + floor(yic[STARTR + ac] *frac_R));  // but only S and R move to Z  
-                                yic[ac]             -= tmp * floor(yic[ac]         ) ;
-                                yic[STARTR + ac]    -= tmp * floor(yic[STARTR + ac] *frac_R) ;
-                                // for (size_t i = 0; i < NUME; i++){          yic[STARTE + i*NUMAC + ac]      -= yic[STARTE + i*NUMAC + ac]       * tmp ;  } // E and A stay in their classes
-                                // for (size_t i = 0; i < NUMA; i++){          yic[STARTA + i*NUMAC + ac]      -= yic[STARTA + i*NUMAC + ac]       * tmp ;  }
-                                for (size_t i = 0; i < NUMRR; i++){   
-                                    yic[STARTZ_1 + ac]              += tmp * floor(yic[STARTRR + i*NUMAC + ac] *frac_R)  ;
-                                    yic[STARTRR + i*NUMAC + ac]     -= tmp * floor(yic[STARTRR + i*NUMAC + ac] *frac_R)  ;
-                                }
-                                // yic[STARTRHOSP + ac] -= yic[STARTRHOSP + ac] * tmp ;
-                                // for (size_t i = 0; i < NUMRRHOSP; i++){     yic[STARTRRHOSP + i*NUMAC + ac] -= yic[STARTRRHOSP + i*NUMAC + ac]  * tmp ;  }
-                                
-                                total_to_Z_next      -= tmp * sum_SEAR;
-                            //     ppc->v_number_to_Z_1_phase1[ac] = ppc->v_already_moved_to_Z_1_phase1[ac];
-                            }
-                        }
-
                         // printf("\n%d distribute leftover doses within vac frac ppc->v_number_to_Z_1_phase1[ac] %f ppc->v_already_moved_to_Z_1_phase1[ac] %f\n", ac, ppc->v_number_to_Z_1_phase1[ac], ppc->v_already_moved_to_Z_1_phase1[ac]);
-                        /* if ( G_B_TEST_BEFORE_VACCINATE ) // test before vaccinating --> equal chance for S, E, A to be vaccinated. S will move to Z; E and A will stay in their classes
+                        if ( G_B_TEST_BEFORE_VACCINATE ) // test before vaccinating --> equal chance for S, E, A to be vaccinated. S will move to Z; E and A will stay in their classes
                         {
                             if (ppc->v_number_to_Z_1_phase1[ac] > (1.0 - DBL_EPSILON)){
                             // if (ppc->v_number_to_Z_1_phase1[ac] > 0.9 && ppc->v_already_moved_to_Z_1_phase1[ac] == ppc->v_number_to_Z_1_phase1[ac] ){
@@ -752,10 +645,10 @@ void generate_trajectories( double inital_number_of_cases, double param_beta, do
                                 // tmp = total_S_Z * ppc->v_pop_frac[ac] / sub_pop; // max vaccines to be randomly distributed to this age group
                                 tmp = total_S_Z / sub_pop; // max vaccines to be randomly distributed to this age group
 
-                                double sum_SEAR = floor(yic[ac]) + floor(yic[STARTR + ac] *frac_R) ;
-                                for (size_t i = 0; i < NUME; i++) {          sum_SEAR += floor(yic[STARTE + i*NUMAC + ac]);  }
-                                for (size_t i = 0; i < NUMA; i++) {          sum_SEAR += floor(yic[STARTA + i*NUMAC + ac]);  }
-                                for (size_t i = 0; i < NUMRR; i++){          sum_SEAR += floor(yic[STARTRR + i*NUMAC + ac] *frac_R);  }
+                                double sum_SEAR = floor(yic[ac]) + floor(yic[STARTR + ac]) ;
+                                for (size_t i = 0; i < NUME; i++){          sum_SEAR += floor(yic[STARTE + i*NUMAC + ac]);  }
+                                for (size_t i = 0; i < NUMA; i++){          sum_SEAR += floor(yic[STARTA + i*NUMAC + ac]);  }
+                                for (size_t i = 0; i < NUMRR; i++){         sum_SEAR += floor(yic[STARTRR + i*NUMAC + ac]);  }
                                 // double sum_SEARRh = yic[ac] + yic[STARTR + ac] + yic[STARTRHOSP + ac];
                                 // for (size_t i = 0; i < NUMRRHOSP; i++){     sum_SEARRh += yic[STARTRRHOSP + i*NUMAC + ac];  }
                                 // sum_SEAR = floor(sum_SEAR);
@@ -773,16 +666,16 @@ void generate_trajectories( double inital_number_of_cases, double param_beta, do
                                 } else {
                                     ppc->v_already_moved_to_Z_1_phase1[ac] += tmp * sum_SEAR;
 
-                                    yic[STARTJZ_1 + ac] += tmp * sum_SEAR;                      // count all vaccine doses being given out
+                                    yic[STARTZ_1 + ac]  += tmp * (floor(yic[ac]) + floor(yic[STARTR + ac]));  // only S and R move to Z  
+                                    yic[STARTJZ_1 + ac] += tmp * sum_SEAR;                      // but count all vaccine doses being given out
 
-                                    yic[STARTZ_1 + ac]  += tmp * (floor(yic[ac]) + floor(yic[STARTR + ac] *frac_R));  // but only S and R move to Z  
-                                    yic[ac]             -= tmp * floor(yic[ac]         ) ;
-                                    yic[STARTR + ac]    -= tmp * floor(yic[STARTR + ac] *frac_R) ;
+                                    yic[ac]              -= tmp * floor(yic[ac]         ) ;
+                                    yic[STARTR + ac]     -= tmp * floor(yic[STARTR + ac]) ;
                                     // for (size_t i = 0; i < NUME; i++){          yic[STARTE + i*NUMAC + ac]      -= yic[STARTE + i*NUMAC + ac]       * tmp ;  } // E and A stay in their classes
                                     // for (size_t i = 0; i < NUMA; i++){          yic[STARTA + i*NUMAC + ac]      -= yic[STARTA + i*NUMAC + ac]       * tmp ;  }
                                     for (size_t i = 0; i < NUMRR; i++){   
-                                        yic[STARTZ_1 + ac]              += tmp * floor(yic[STARTRR + i*NUMAC + ac] *frac_R)  ;
-                                        yic[STARTRR + i*NUMAC + ac]     -= tmp * floor(yic[STARTRR + i*NUMAC + ac] *frac_R)  ;
+                                        yic[STARTZ_1 + ac]              += tmp * floor(yic[STARTRR + i*NUMAC + ac])  ;
+                                        yic[STARTRR + i*NUMAC + ac]     -= tmp * floor(yic[STARTRR + i*NUMAC + ac])  ;
                                     }
                                     // yic[STARTRHOSP + ac] -= yic[STARTRHOSP + ac] * tmp ;
                                     // for (size_t i = 0; i < NUMRRHOSP; i++){     yic[STARTRRHOSP + i*NUMAC + ac] -= yic[STARTRRHOSP + i*NUMAC + ac]  * tmp ;  }
@@ -791,7 +684,7 @@ void generate_trajectories( double inital_number_of_cases, double param_beta, do
                                 //     ppc->v_number_to_Z_1_phase1[ac] = ppc->v_already_moved_to_Z_1_phase1[ac];
                                 }
                             }
-                        } */
+                        }
                         // printf("%d distribute leftover doses within vac frac ppc->v_number_to_Z_1_phase1[ac] %f ppc->v_already_moved_to_Z_1_phase1[ac] %f\n", ac, ppc->v_number_to_Z_1_phase1[ac], ppc->v_already_moved_to_Z_1_phase1[ac]);
                     }
                 }
@@ -856,53 +749,8 @@ void generate_trajectories( double inital_number_of_cases, double param_beta, do
                 sub_pop = sub_pop_next;
                 total_S_Z = total_to_Z_next;
                 for (int ac = 0; ac < NUMAC; ac++){
-                    if ( G_B_TEST_BEFORE_VACCINATE ){ frac_R = 1.0 - (1.0 - ppc->v_prob_E_A[ac])*ppc->v[ i_reporting_rate ]; } 
-                    else { frac_R = 1.0; }
-
-                    if ( (!G_B_USE_VAC_FRAC && G_B_USE_VAC_RATIO && ppc->v_number_to_Z_1_phase1[ac] > 0.0 && ppc->v_number_to_Z_1_phase1[ac] < 1.0) ||
-                            (G_B_USE_VAC_FRAC && G_B_USE_VAC_RATIO && ppc->v_number_to_Z_1_phase1[ac] > 0.0 ) ){
-                        tmp = total_S_Z * ppc->v_pop_frac[ac] / sub_pop; // max vaccines to be randomly distributed to this age group
-
-                        double sum_SEAR = floor(yic[ac]) + floor(yic[STARTR + ac] *frac_R) ;
-                        for (size_t i = 0; i < NUME; i++) {         sum_SEAR += floor(yic[STARTE + i*NUMAC + ac]);  }
-                        for (size_t i = 0; i < NUMA; i++) {         sum_SEAR += floor(yic[STARTA + i*NUMAC + ac]);  }
-                        for (size_t i = 0; i < NUMRR; i++){         sum_SEAR += floor(yic[STARTRR + i*NUMAC + ac] *frac_R);  }
-                        // double sum_SEARRh = yic[ac] + yic[STARTR + ac] + yic[STARTRHOSP + ac];
-                        // for (size_t i = 0; i < NUMRRHOSP; i++){     sum_SEARRh += yic[STARTRRHOSP + i*NUMAC + ac];  }
-                        // sum_SEAR = floor(sum_SEAR);
-
-                        // sum_SEAR = floor(sum_SEAR);
-
-                        if (sum_SEAR < tmp){
-                            tmp = 1.0;
-                            sub_pop_next -= ppc->v_pop_frac[ac];
-                        } else {
-                            tmp = tmp / sum_SEAR;
-                        }
-
-                        // if (tmp * sum_SEAR >= 1.0){
-                            yic[STARTJZ_1 + ac] += tmp * sum_SEAR;                      // count all vaccine doses being given out
-
-                            yic[STARTZ_1 + ac]  += tmp * (floor(yic[ac]) + floor(yic[STARTR + ac] *frac_R));  // but only S and R move to Z  
-                            yic[ac]             -= tmp *  floor(yic[ac]         ) ;
-                            yic[STARTR + ac]    -= tmp *  floor(yic[STARTR + ac] *frac_R) ;
-                            // for (size_t i = 0; i < NUME; i++){          yic[STARTE + i*NUMAC + ac]      -= yic[STARTE + i*NUMAC + ac]       * tmp ;  } // E and A stay in their classes
-                            // for (size_t i = 0; i < NUMA; i++){          yic[STARTA + i*NUMAC + ac]      -= yic[STARTA + i*NUMAC + ac]       * tmp ;  }
-                            for (size_t i = 0; i < NUMRR; i++){   
-                                yic[STARTZ_1 + ac]              += tmp * floor(yic[STARTRR + i*NUMAC + ac] *frac_R) ;
-                                yic[STARTRR + i*NUMAC + ac]     -= tmp * floor(yic[STARTRR + i*NUMAC + ac] *frac_R) ;
-                            }
-                            // yic[STARTRHOSP + ac] -= yic[STARTRHOSP + ac] * tmp ;
-                            // for (size_t i = 0; i < NUMRRHOSP; i++){     yic[STARTRRHOSP + i*NUMAC + ac] -= yic[STARTRRHOSP + i*NUMAC + ac]  * tmp ;  }
-                        // }
-
-                        // total_to_Z_next      -= ceil(tmp * sum_SEAR);
-                        total_to_Z_next      -= tmp * sum_SEAR;
-                        ppc->v_already_moved_to_Z_1_phase1[ac] += tmp * sum_SEAR;
-                    }
-
                     // printf("%d distribute leftover doses within vac ratio ppc->v_number_to_Z_1_phase1[ac] %f ppc->v_already_moved_to_Z_1_phase1[ac] %f\n", ac, ppc->v_number_to_Z_1_phase1[ac], ppc->v_already_moved_to_Z_1_phase1[ac]);
-                    /* if ( G_B_TEST_BEFORE_VACCINATE ) // test before vaccinating --> equal chance for S, E, A to be vaccinated. S will move to Z; E and A will stay in their classes
+                    if ( G_B_TEST_BEFORE_VACCINATE ) // test before vaccinating --> equal chance for S, E, A to be vaccinated. S will move to Z; E and A will stay in their classes
                     {
                         if ( (!G_B_USE_VAC_FRAC && G_B_USE_VAC_RATIO && ppc->v_number_to_Z_1_phase1[ac] > 0.0 && ppc->v_number_to_Z_1_phase1[ac] < 1.0) ||
                              (G_B_USE_VAC_FRAC && G_B_USE_VAC_RATIO && ppc->v_number_to_Z_1_phase1[ac] > 0.0 ) ){
@@ -941,10 +789,10 @@ void generate_trajectories( double inital_number_of_cases, double param_beta, do
                              (G_B_USE_VAC_FRAC && G_B_USE_VAC_RATIO && ppc->v_number_to_Z_1_phase1[ac] > 0.0 ) ){
                             tmp = total_S_Z * ppc->v_pop_frac[ac] / sub_pop; // max vaccines to be randomly distributed to this age group
 
-                            double sum_SEAR = floor(yic[ac]) + floor(yic[STARTR + ac] *frac_R) ;
-                            for (size_t i = 0; i < NUME; i++) {         sum_SEAR += floor(yic[STARTE + i*NUMAC + ac]);  }
-                            for (size_t i = 0; i < NUMA; i++) {         sum_SEAR += floor(yic[STARTA + i*NUMAC + ac]);  }
-                            for (size_t i = 0; i < NUMRR; i++){         sum_SEAR += floor(yic[STARTRR + i*NUMAC + ac] *frac_R);  }
+                            double sum_SEAR = floor(yic[ac]) + floor(yic[STARTR + ac]) ;
+                            for (size_t i = 0; i < NUME; i++){          sum_SEAR += floor(yic[STARTE + i*NUMAC + ac]);  }
+                            for (size_t i = 0; i < NUMA; i++){          sum_SEAR += floor(yic[STARTA + i*NUMAC + ac]);  }
+                            for (size_t i = 0; i < NUMRR; i++){         sum_SEAR += floor(yic[STARTRR + i*NUMAC + ac]);  }
                             // double sum_SEARRh = yic[ac] + yic[STARTR + ac] + yic[STARTRHOSP + ac];
                             // for (size_t i = 0; i < NUMRRHOSP; i++){     sum_SEARRh += yic[STARTRRHOSP + i*NUMAC + ac];  }
                             // sum_SEAR = floor(sum_SEAR);
@@ -959,16 +807,16 @@ void generate_trajectories( double inital_number_of_cases, double param_beta, do
                             }
 
                             // if (tmp * sum_SEAR >= 1.0){
-                                yic[STARTJZ_1 + ac] += tmp * sum_SEAR;                      // count all vaccine doses being given out
+                                yic[STARTZ_1 + ac]  += tmp * (floor(yic[ac]) + floor(yic[STARTR + ac]));  // only S and R move to Z  
+                                yic[STARTJZ_1 + ac] += tmp * sum_SEAR;                      // but count all vaccine doses being given out
 
-                                yic[STARTZ_1 + ac]  += tmp * (floor(yic[ac]) + floor(yic[STARTR + ac] *frac_R));  // but only S and R move to Z  
-                                yic[ac]             -= tmp *  floor(yic[ac]         ) ;
-                                yic[STARTR + ac]    -= tmp *  floor(yic[STARTR + ac] *frac_R) ;
+                                yic[ac]              -= tmp * floor(yic[ac]         ) ;
+                                yic[STARTR + ac]     -= tmp * floor(yic[STARTR + ac]) ;
                                 // for (size_t i = 0; i < NUME; i++){          yic[STARTE + i*NUMAC + ac]      -= yic[STARTE + i*NUMAC + ac]       * tmp ;  } // E and A stay in their classes
                                 // for (size_t i = 0; i < NUMA; i++){          yic[STARTA + i*NUMAC + ac]      -= yic[STARTA + i*NUMAC + ac]       * tmp ;  }
                                 for (size_t i = 0; i < NUMRR; i++){   
-                                    yic[STARTZ_1 + ac]              += tmp * floor(yic[STARTRR + i*NUMAC + ac] *frac_R) ;
-                                    yic[STARTRR + i*NUMAC + ac]     -= tmp * floor(yic[STARTRR + i*NUMAC + ac] *frac_R) ;
+                                    yic[STARTZ_1 + ac]              += tmp * floor(yic[STARTRR + i*NUMAC + ac]) ;
+                                    yic[STARTRR + i*NUMAC + ac]     -= tmp * floor(yic[STARTRR + i*NUMAC + ac]) ;
                                 }
                                 // yic[STARTRHOSP + ac] -= yic[STARTRHOSP + ac] * tmp ;
                                 // for (size_t i = 0; i < NUMRRHOSP; i++){     yic[STARTRRHOSP + i*NUMAC + ac] -= yic[STARTRRHOSP + i*NUMAC + ac]  * tmp ;  }
@@ -978,53 +826,12 @@ void generate_trajectories( double inital_number_of_cases, double param_beta, do
                             total_to_Z_next      -= tmp * sum_SEAR;
                             ppc->v_already_moved_to_Z_1_phase1[ac] += tmp * sum_SEAR;
                         }
-                    } */
+                    }
                     // printf("%d distribute leftover doses within vac ratio ppc->v_number_to_Z_1_phase1[ac] %f ppc->v_already_moved_to_Z_1_phase1[ac] %f\n", ac, ppc->v_number_to_Z_1_phase1[ac], ppc->v_already_moved_to_Z_1_phase1[ac]);   
                 }
             }
 
         }
-        
-
-
-
-        // 
-        // high-efficacy vaccine
-        //
-        // TODO: number_S_Z_2_phase1 must be proportional to pop_frac
-        //
-        /* if (!b_vac2_phase1_began && tt > G_CLO_VAC_2_PHASE1_BEGINDAY){
-            // double phase1_duration = G_CLO_VAC_2_PHASE1_ENDDAY - G_CLO_VAC_2_PHASE1_BEGINDAY + 1;  
-            int ac = 0;
-            // find min vac_frac
-            for (ac = 0; ac < NUMAC; ac++) {
-                if (ppc->v_prob_S_Z_2[ac] > 0.0) { min_vac_frac_2 = Min(min_vac_frac_2, ppc->v_prob_S_Z_2[ac]); }
-            }  
-            // sum of weighted vac frac * pop frac
-            for (ac =0; ac < NUMAC; ac++){
-                sum_weighted_vac_frac_2 += ppc->v_prob_S_Z_2[ac] * ppc->v_pop_frac[ac] / min_vac_frac_2;
-            }
-            for (ac = 0; ac < NUMAC; ac++)
-            {
-                if (ppc->v_prob_S_Z_2[ac] > 0.0){
-                    // ppc->v_number_S_Z_2_phase1[ac] = yic[ac] * ppc->v_prob_S_Z_2[ac] / (phase1_duration * steps_per_day) ;
-                    // ppc->v_number_S_Z_2_phase1[ac] = ppc->v[i_vac2_phase1_dpd] * ppc->v_prob_S_Z_2[ac] /  steps_per_day; // absolute number of doses
-                    ppc->v_number_S_Z_2_phase1[ac] = (ppc->v[i_vac2_phase1_dpd] * ppc->v_prob_S_Z_2[ac] * ppc->v_pop_frac[ac]) / (min_vac_frac_2 * sum_weighted_vac_frac_2 *  steps_per_day); // proportional to pop frac
-                }
-            }       
-            b_vac2_phase1_began = true;
-        }
-        // vaccinate people, i.e. moving S to Z
-        if (b_vac2_phase1_began && tt > G_CLO_VAC_2_PHASE1_BEGINDAY && tt <= G_CLO_VAC_2_PHASE1_ENDDAY){
-            double tmp = 0.0;
-            for (int ac = 0; ac < NUMAC; ac++){
-                tmp = Min(yic[ac], ppc->v_number_S_Z_2_phase1[ac]);
-                yic[ac] -= tmp;
-                yic[STARTZ_2 + ac] += tmp;
-                yic[STARTJZ_2 + ac] += tmp;
-            }
-            
-        } */
         
         
         
