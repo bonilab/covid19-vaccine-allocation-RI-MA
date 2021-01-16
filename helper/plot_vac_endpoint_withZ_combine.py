@@ -30,11 +30,11 @@ if __name__ == "__main__":
     sim = covid_sim.COVID_SIM(cpp_dir)
     # numac = int(sim.indices['NUMAC'])
 
-    loc = 'MA'
+    loc = 'RI'
     trset = 'high'
-    savefig_dir = Path(cpp_dir.parent, 'sim_output/20210105-figures')
-    out_dir_1 = Path(cpp_dir.parent, 'sim_output/20201228-{}-sens204970-{}-tot_300k'.format(trset, loc))
-    out_dir_2 = Path(cpp_dir.parent, 'sim_output/20210105-{}-sens204970-{}-tot_1800k'.format(trset, loc))
+    savefig_dir = Path(cpp_dir.parent, 'sim_output/20201226-figures')
+    out_dir_1 = Path(cpp_dir.parent, 'sim_output/20201226-{}-sens204970-{}-tot_300k'.format(trset, loc))
+    out_dir_2 = Path(cpp_dir.parent, 'sim_output/20201226-{}-sens204970-{}-tot_1800k'.format(trset, loc))
     ## vaccination stratgies:
     # sim_labels = ['no vaccine', 'random', 
     #               'random 10/90 among 20-49 and 70+',

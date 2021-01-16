@@ -25,9 +25,9 @@ if __name__ == "__main__":
     sim = covid_sim.COVID_SIM(cpp_dir)
     numac = int(sim.indices['NUMAC'])
 
-    loc = 'MA'
-    savefig_dir = Path(cpp_dir.parent, 'sim_output/20210111-figures')
-    out_dir = Path(cpp_dir.parent, 'sim_output/20210111-med-inexgrp-{}-tot_1800k/'.format(loc))
+    loc = 'RI'
+    savefig_dir = Path(cpp_dir.parent, 'sim_output/20201226-figures')
+    out_dir = Path(cpp_dir.parent, 'sim_output/20201226-med-inexgrp-{}-tot_1800k/'.format(loc))
     conf = pd.read_csv(Path(out_dir, 'config-in_ex_group.csv'))
     nsim = conf.shape[0]
     startday = 370

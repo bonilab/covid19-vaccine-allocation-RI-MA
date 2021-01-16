@@ -30,11 +30,11 @@ if __name__ == "__main__":
 
     loc = "RI"
     trset = 'med'
-    savefig_dir = Path(cpp_dir.parent, 'sim_output/20210111-figures')
-    out_dir_1 = Path(cpp_dir.parent, 'sim_output/20210111-{}-allvac-{}-tot_50k'.format(trset, loc))
-    out_dir_2 = Path(cpp_dir.parent, 'sim_output/20210111-{}-allvac-{}-tot_50k-notest'.format(trset, loc))
-    out_dir_3 = Path(cpp_dir.parent, 'sim_output/20210111-{}-allvac-{}-tot_300k'.format(trset, loc))
-    out_dir_4 = Path(cpp_dir.parent, 'sim_output/20210111-{}-allvac-{}-tot_300k-notest'.format(trset, loc))
+    savefig_dir = Path(cpp_dir.parent, 'sim_output/20201226-figures')
+    out_dir_1 = Path(cpp_dir.parent, 'sim_output/20201226-{}-allvac-{}-tot_50k'.format(trset, loc))
+    out_dir_2 = Path(cpp_dir.parent, 'sim_output/20201226-{}-allvac-{}-tot_50k-notest'.format(trset, loc))
+    out_dir_3 = Path(cpp_dir.parent, 'sim_output/20201226-{}-allvac-{}-tot_300k'.format(trset, loc))
+    out_dir_4 = Path(cpp_dir.parent, 'sim_output/20201226-{}-allvac-{}-tot_300k-notest'.format(trset, loc))
     
     ## vaccination stratgies:
     ##      0. no vaccine
