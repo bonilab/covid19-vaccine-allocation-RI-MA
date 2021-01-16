@@ -12,7 +12,7 @@ cpp-v4-6e-severe-classes/
 cpp-v5-discharges-nonhospdeaths/
 
 # simulation output
-sim_output
+## sim_output
 
 # subdirs in helper
 helper/tmp
