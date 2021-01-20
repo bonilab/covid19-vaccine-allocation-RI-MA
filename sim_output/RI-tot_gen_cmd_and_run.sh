@@ -2,10 +2,13 @@
 
 
 loc="RI"
-declare -a dir_pre_a=("20201226-med-allvac" "20201226-low-allvac" "20201226-high-allvac")
-# declare -a dir_pre_a=("20201226-med-sens204970" "20201226-low-sens204970" "20201226-high-sens204970")
 
+## for Figure 3, 5, 7
+declare -a dir_pre_a=("20201226-med-allvac" "20201226-low-allvac" "20201226-high-allvac")
 declare -a dir_sfx=("tot_50k" "tot_50k-notest" "tot_300k" "tot_300k-notest")
+
+## for Figure 6
+# declare -a dir_pre_a=("20201226-med-sens204970" "20201226-low-sens204970" "20201226-high-sens204970")
 # declare -a dir_sfx=("tot_50k" "tot_300k")
 
 

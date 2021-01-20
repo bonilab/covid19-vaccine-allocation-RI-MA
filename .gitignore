@@ -1,3 +1,4 @@
+*.7z
 odesim
 Rplots.pdf
 *#*
@@ -12,7 +13,8 @@ cpp-v4-6e-severe-classes/
 cpp-v5-discharges-nonhospdeaths/
 
 # simulation output
-## sim_output
+sim_output/20201226-results
+sim_output/20210109-results
 
 # subdirs in helper
 helper/tmp
