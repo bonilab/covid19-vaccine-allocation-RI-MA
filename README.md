@@ -1,5 +1,5 @@
 # covid19-vaccine-allocation-RI-MA
-Model evaluation of SARS-CoV-2 vaccine allocation in Rhode Island and Massachusets in Spring 2021
+Model evaluation of SARS-CoV-2 vaccine allocation in Rhode Island and Massachusetts in Spring 2021
 
 Preprint: [Optimal SARS-CoV-2 vaccine allocation using real-time seroprevalence estimates in Rhode Island and Massachusetts](https://doi.org/10.1101/2021.01.12.21249694) 
 
