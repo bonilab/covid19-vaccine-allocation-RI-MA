@@ -39,7 +39,7 @@ mkdir s370_e429_d30000
 **Note:** raw trajectories files are available on request.
 
 ## 3. Reproduce figures
-Python scripts needed to reproduce main text figures (and similar for those in the supplement) are available in `helper` folder:
+Python3 scripts needed to reproduce main text figures (and similar for those in the supplement) are available in `helper` folder:
 
 - Figure 2: `plot_efficacy.py`
 - Figure 3: `plot_low_med_high_transmission.py`
