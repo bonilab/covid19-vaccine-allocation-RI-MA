@@ -132,6 +132,7 @@ bool G_B_REMOVE_99COLUMNS = false;
 bool G_B_BINARY_OUTPUT = false;
 bool G_B_DEATHRATE_OUTPUT = false;
 
+double G_CLO_REPORTING_RATE = 1.0;
 
 int G_CLO_NORMALCY_BEGINDAY = 1098;       // January 02, 2023
 
@@ -149,8 +150,20 @@ double G_CLO_VAC_1_FOI = 0.001; // force-of-infection when vaccine 1 trial was d
 double G_CLO_VAC_1_PROTECT_DURATION = 360.0;
 double G_CLO_VAC_1_EFF_HALFLIFE = G_CLO_VAC_1_PROTECT_DURATION / 2.0;
 double G_CLO_VAC_1_EFF_SLOPE = 5.0;
+// int G_CLO_VAC_1_PHASE1_BEGINDAY = 350; // phase 1: vaccine roll-out campaign
+// int G_CLO_VAC_1_PHASE1_ENDDAY = 365;
+// int G_CLO_VAC_1_PHASE1_DPD = 0; // dose-per-day
 int G_CLO_VAC_1_PHASE2_BEGINDAY = 1450; // phase 2: routine vaccination
 int G_CLO_VAC_1_PHASE2_ENDDAY = 2000;
+// double G_CLO_VAC_1_FRAC_00 = 0.0;
+// double G_CLO_VAC_1_FRAC_10 = 0.0;
+// double G_CLO_VAC_1_FRAC_20 = 0.0;
+// double G_CLO_VAC_1_FRAC_30 = 0.0;
+// double G_CLO_VAC_1_FRAC_40 = 0.0;
+// double G_CLO_VAC_1_FRAC_50 = 0.0;
+// double G_CLO_VAC_1_FRAC_60 = 0.0;
+// double G_CLO_VAC_1_FRAC_70 = 0.0;
+// double G_CLO_VAC_1_FRAC_80 = 0.0;
 // relative efficacy for each age group
 double G_CLO_VAC_1_REL_EFF_00 = 1.0;
 double G_CLO_VAC_1_REL_EFF_10 = 1.0;
@@ -321,6 +334,7 @@ int main(int argc, char* argv[])
     ppc->v[ i_len_medicalfloor_hospital_stay ]              = 10.7 * G_CLO_DEV_LEN_HOSPSTAY; //   take from Lewnard et al, survivors only
     ppc->v[ i_len_natural_immunity ]                        = G_CLO_LEN_NAT_IMMU; 
     ppc->v[ i_mean_time_vent ]                              = G_CLO_MEANTIME_ON_VENT_SURV;   //   mean time on ventilator for survivors
+    ppc->v[ i_reporting_rate ]                              = G_CLO_REPORTING_RATE;          //   reporting rate to be used when distributing vaccines to R-class
     
     
     // params below are for relative infectiousness of certain individuals; I1 and I2 individuals have infectiousness = 1.0
@@ -604,6 +618,18 @@ int main(int argc, char* argv[])
     ppc->v_prob_CR_D[7] = 1.0*G_CLO_DEATHPROB_POSTVENT;
     ppc->v_prob_CR_D[8] = 2.0*G_CLO_DEATHPROB_POSTVENT;
     
+
+    // vaccination fraction
+    // ppc->v_prob_S_Z_1[0] = 1.0 - (G_CLO_VAC_1_FRAC_10 + G_CLO_VAC_1_FRAC_20 + G_CLO_VAC_1_FRAC_30 + G_CLO_VAC_1_FRAC_40 + G_CLO_VAC_1_FRAC_50 + G_CLO_VAC_1_FRAC_60 + G_CLO_VAC_1_FRAC_70 + G_CLO_VAC_1_FRAC_80);    
+    // ppc->v_prob_S_Z_1[1] = G_CLO_VAC_1_FRAC_10;
+    // ppc->v_prob_S_Z_1[2] = G_CLO_VAC_1_FRAC_20;
+    // ppc->v_prob_S_Z_1[3] = G_CLO_VAC_1_FRAC_30;    
+    // ppc->v_prob_S_Z_1[4] = G_CLO_VAC_1_FRAC_40;
+    // ppc->v_prob_S_Z_1[5] = G_CLO_VAC_1_FRAC_50;
+    // ppc->v_prob_S_Z_1[6] = G_CLO_VAC_1_FRAC_60;
+    // ppc->v_prob_S_Z_1[7] = G_CLO_VAC_1_FRAC_70;
+    // ppc->v_prob_S_Z_1[8] = G_CLO_VAC_1_FRAC_80;
+    // if (ppc->v_prob_S_Z_1[0] < 0.000001) { ppc->v_prob_S_Z_1[0] = 0.0; }
     
     // fill v_vac_ratios_phase1_vac1 for age group 0-9 if needed
     for (size_t i = 0; i < ppc->v_vac_ratios_phase1_vac1[8].size(); i++){
@@ -634,6 +660,17 @@ int main(int argc, char* argv[])
         ppc->v_vac_fracs_phase1_vac1[0].push_back( tmp );
     }
     
+
+    /* ppc->v_prob_S_Z_2[0] = 1.0 - (G_CLO_VAC_2_FRAC_10 + G_CLO_VAC_2_FRAC_20 + G_CLO_VAC_2_FRAC_30 + G_CLO_VAC_2_FRAC_40 + G_CLO_VAC_2_FRAC_50 + G_CLO_VAC_2_FRAC_60 + G_CLO_VAC_2_FRAC_70 + G_CLO_VAC_2_FRAC_80); 
+    ppc->v_prob_S_Z_2[1] = G_CLO_VAC_2_FRAC_10;
+    ppc->v_prob_S_Z_2[2] = G_CLO_VAC_2_FRAC_20;
+    ppc->v_prob_S_Z_2[3] = G_CLO_VAC_2_FRAC_30;    
+    ppc->v_prob_S_Z_2[4] = G_CLO_VAC_2_FRAC_40;
+    ppc->v_prob_S_Z_2[5] = G_CLO_VAC_2_FRAC_50;
+    ppc->v_prob_S_Z_2[6] = G_CLO_VAC_2_FRAC_60;
+    ppc->v_prob_S_Z_2[7] = G_CLO_VAC_2_FRAC_70;
+    ppc->v_prob_S_Z_2[8] = G_CLO_VAC_2_FRAC_80;
+    if (ppc->v_prob_S_Z_2[0] < 0.000001) { ppc->v_prob_S_Z_2[0] = 0.0; } */
     
     // relative effiacy for each age group
     ppc->v_rel_eff_Z_1[0] = G_CLO_VAC_1_REL_EFF_00;
@@ -817,61 +854,119 @@ void InitializeContactMatrices( void )
 
     // G_C_COMM[infectee][infector] = G_C_COMM[participant][contact] ;
 
-    // CoMix - Belgium wave 1 (late April 2020) matrix from `socialmixr` R package;
-    G_C_COMM[0][0] = 0.1;
+    if (ppc->cm_loc == (int)(contact_matrix_loc::be)){
+        // CoMix - Belgium wave 1 (late April 2020) matrix from `socialmixr` R package;
+        G_C_COMM[0][0] = 0.1;
 
-    G_C_COMM[0][1] = 0.161290322580645;     G_C_COMM[1][0] = 0.161290322580645; 
-    G_C_COMM[0][2] = 0.272881355932203;     G_C_COMM[2][0] = 0.272881355932203;
-    G_C_COMM[0][3] = 1.04761904761905;      G_C_COMM[3][0] = 1.04761904761905;
-    G_C_COMM[0][4] = 0.472573839662447;     G_C_COMM[4][0] = 0.472573839662447;
-    G_C_COMM[0][5] = 0.118043844856661;     G_C_COMM[5][0] = 0.118043844856661;
-    G_C_COMM[0][6] = 0.169491525423729;     G_C_COMM[6][0] = 0.169491525423729;
-    G_C_COMM[0][7] = 0.064814814814815;     G_C_COMM[7][0] = 0.064814814814815;
-    G_C_COMM[0][8] = 0.001;                 G_C_COMM[8][0] = 0.001;
+        G_C_COMM[0][1] = 0.161290322580645;     G_C_COMM[1][0] = 0.161290322580645; 
+        G_C_COMM[0][2] = 0.272881355932203;     G_C_COMM[2][0] = 0.272881355932203;
+        G_C_COMM[0][3] = 1.04761904761905;      G_C_COMM[3][0] = 1.04761904761905;
+        G_C_COMM[0][4] = 0.472573839662447;     G_C_COMM[4][0] = 0.472573839662447;
+        G_C_COMM[0][5] = 0.118043844856661;     G_C_COMM[5][0] = 0.118043844856661;
+        G_C_COMM[0][6] = 0.169491525423729;     G_C_COMM[6][0] = 0.169491525423729;
+        G_C_COMM[0][7] = 0.064814814814815;     G_C_COMM[7][0] = 0.064814814814815;
+        G_C_COMM[0][8] = 0.001;                 G_C_COMM[8][0] = 0.001;
 
-    G_C_COMM[1][1] = 1.95967741935484; 
-    G_C_COMM[1][2] = 1.20967741935484;      G_C_COMM[2][1] = 0.389830508474576;
-    G_C_COMM[1][3] = 0.564516129032258;     G_C_COMM[3][1] = 0.328407224958949;
-    G_C_COMM[1][4] = 0.983870967741935;     G_C_COMM[4][1] = 1.21097046413502;
-    G_C_COMM[1][5] = 0.491935483870968;     G_C_COMM[5][1] = 0.450252951096121;
-    G_C_COMM[1][6] = 0.080645161290323;     G_C_COMM[6][1] = 0.149152542372881;
-    G_C_COMM[1][7] = 0.258064516129032;     G_C_COMM[7][1] = 0.037037037037037;
-    G_C_COMM[1][8] = 0.001;                 G_C_COMM[8][1] = 0.001;
+        G_C_COMM[1][1] = 1.95967741935484; 
+        G_C_COMM[1][2] = 1.20967741935484;      G_C_COMM[2][1] = 0.389830508474576;
+        G_C_COMM[1][3] = 0.564516129032258;     G_C_COMM[3][1] = 0.328407224958949;
+        G_C_COMM[1][4] = 0.983870967741935;     G_C_COMM[4][1] = 1.21097046413502;
+        G_C_COMM[1][5] = 0.491935483870968;     G_C_COMM[5][1] = 0.450252951096121;
+        G_C_COMM[1][6] = 0.080645161290323;     G_C_COMM[6][1] = 0.149152542372881;
+        G_C_COMM[1][7] = 0.258064516129032;     G_C_COMM[7][1] = 0.037037037037037;
+        G_C_COMM[1][8] = 0.001;                 G_C_COMM[8][1] = 0.001;
 
-    G_C_COMM[2][2] = 1.93728813559322;
-    G_C_COMM[2][3] = 0.377966101694915;     G_C_COMM[3][2] = 1.1559934318555;
-    G_C_COMM[2][4] = 0.961016949152542;     G_C_COMM[4][2] = 0.727144866385373;
-    G_C_COMM[2][5] = 0.8;                   G_C_COMM[5][2] = 0.860033726812816;
-    G_C_COMM[2][6] = 0.111864406779661;     G_C_COMM[6][2] = 0.688135593220339;
-    G_C_COMM[2][7] = 0.133898305084746;     G_C_COMM[7][2] = 0.236111111111111;
-    G_C_COMM[2][8] = 0.150847457627119;     G_C_COMM[8][2] = 0.001;
+        G_C_COMM[2][2] = 1.93728813559322;
+        G_C_COMM[2][3] = 0.377966101694915;     G_C_COMM[3][2] = 1.1559934318555;
+        G_C_COMM[2][4] = 0.961016949152542;     G_C_COMM[4][2] = 0.727144866385373;
+        G_C_COMM[2][5] = 0.8;                   G_C_COMM[5][2] = 0.860033726812816;
+        G_C_COMM[2][6] = 0.111864406779661;     G_C_COMM[6][2] = 0.688135593220339;
+        G_C_COMM[2][7] = 0.133898305084746;     G_C_COMM[7][2] = 0.236111111111111;
+        G_C_COMM[2][8] = 0.150847457627119;     G_C_COMM[8][2] = 0.001;
 
-    G_C_COMM[3][3] = 1.26929392446634;
-    G_C_COMM[3][4] = 0.48111658456486;      G_C_COMM[4][3] = 1.0365682137834;
-    G_C_COMM[3][5] = 0.41871921182266;      G_C_COMM[5][3] = 0.458684654300169;
-    G_C_COMM[3][6] = 0.183908045977011;     G_C_COMM[6][3] = 0.603389830508475;
-    G_C_COMM[3][7] = 0.139573070607553;     G_C_COMM[7][3] = 0.324074074074074;
-    G_C_COMM[3][8] = 0.004926108374384;     G_C_COMM[8][3] = 0.153846153846154;
+        G_C_COMM[3][3] = 1.26929392446634;
+        G_C_COMM[3][4] = 0.48111658456486;      G_C_COMM[4][3] = 1.0365682137834;
+        G_C_COMM[3][5] = 0.41871921182266;      G_C_COMM[5][3] = 0.458684654300169;
+        G_C_COMM[3][6] = 0.183908045977011;     G_C_COMM[6][3] = 0.603389830508475;
+        G_C_COMM[3][7] = 0.139573070607553;     G_C_COMM[7][3] = 0.324074074074074;
+        G_C_COMM[3][8] = 0.004926108374384;     G_C_COMM[8][3] = 0.153846153846154;
 
-    G_C_COMM[4][4] = 1.06188466947961;
-    G_C_COMM[4][5] = 0.312236286919831;     G_C_COMM[5][4] = 0.728499156829679;
-    G_C_COMM[4][6] = 0.135021097046413;     G_C_COMM[6][4] = 0.415254237288136;
-    G_C_COMM[4][7] = 0.174402250351617;     G_C_COMM[7][4] = 0.449074074074074;
-    G_C_COMM[4][8] = 0.035161744022504;     G_C_COMM[8][4] = 0.692307692307692;
+        G_C_COMM[4][4] = 1.06188466947961;
+        G_C_COMM[4][5] = 0.312236286919831;     G_C_COMM[5][4] = 0.728499156829679;
+        G_C_COMM[4][6] = 0.135021097046413;     G_C_COMM[6][4] = 0.415254237288136;
+        G_C_COMM[4][7] = 0.174402250351617;     G_C_COMM[7][4] = 0.449074074074074;
+        G_C_COMM[4][8] = 0.035161744022504;     G_C_COMM[8][4] = 0.692307692307692;
 
-    G_C_COMM[5][5] = 0.772344013490725;
-    G_C_COMM[5][6] = 0.124789207419899;     G_C_COMM[6][5] = 0.844067796610169;
-    G_C_COMM[5][7] = 0.12141652613828;      G_C_COMM[7][5] = 0.37962962962963;
-    G_C_COMM[5][8] = 0.084317032040472;     G_C_COMM[8][5] = 0.153846153846154;
+        G_C_COMM[5][5] = 0.772344013490725;
+        G_C_COMM[5][6] = 0.124789207419899;     G_C_COMM[6][5] = 0.844067796610169;
+        G_C_COMM[5][7] = 0.12141652613828;      G_C_COMM[7][5] = 0.37962962962963;
+        G_C_COMM[5][8] = 0.084317032040472;     G_C_COMM[8][5] = 0.153846153846154;
 
-    G_C_COMM[6][6] = 0.691525423728813;
-    G_C_COMM[6][7] = 0.347457627118644;     G_C_COMM[7][6] = 0.574074074074074;
-    G_C_COMM[6][8] = 0.030508474576271;     G_C_COMM[8][6] = 0.230769230769231;
+        G_C_COMM[6][6] = 0.691525423728813;
+        G_C_COMM[6][7] = 0.347457627118644;     G_C_COMM[7][6] = 0.574074074074074;
+        G_C_COMM[6][8] = 0.030508474576271;     G_C_COMM[8][6] = 0.230769230769231;
 
-    G_C_COMM[7][7] = 1.40740740740741;
-    G_C_COMM[7][8] = 0.083333333333333;     G_C_COMM[8][7] = 0.307692307692308;
+        G_C_COMM[7][7] = 1.40740740740741;
+        G_C_COMM[7][8] = 0.083333333333333;     G_C_COMM[8][7] = 0.307692307692308;
 
-    G_C_COMM[8][8] = 0.384615384615385;
+        G_C_COMM[8][8] = 0.384615384615385;
+    } else if (ppc->cm_loc == (int)(contact_matrix_loc::uk) || ppc->cm_loc == (int)(contact_matrix_loc::ukbe)){
+        // CoMix - UK wave 1 (late March 2020) matrix from Jarvis et al 2020 BMC Med;
+        G_C_COMM[0][0] = 0.1;
+        G_C_COMM[0][1] = 0.08;                  G_C_COMM[1][0] = 0.08; 
+        G_C_COMM[0][2] = 0.13513514;            G_C_COMM[2][0] = 0.13513514;
+        G_C_COMM[0][3] = 0.19545455;            G_C_COMM[3][0] = 0.19545455;
+        G_C_COMM[0][4] = 0.09947644;            G_C_COMM[4][0] = 0.09947644;
+        G_C_COMM[0][5] = 0.02890173;            G_C_COMM[5][0] = 0.02890173;
+        G_C_COMM[0][6] = 0.01913876;            G_C_COMM[6][0] = 0.01913876;
+        G_C_COMM[0][7] = 0.05405405;            G_C_COMM[7][0] = 0.05405405;
+        G_C_COMM[0][8] = 0.05405405;            G_C_COMM[8][0] = 0.05405405;
+
+        G_C_COMM[1][1] = 0.3; 
+        G_C_COMM[1][2] = 0.33513514;            G_C_COMM[2][1] = 0.33513514;
+        G_C_COMM[1][3] = 0.46818182;            G_C_COMM[3][1] = 0.46818182;
+        G_C_COMM[1][4] = 0.70157068;            G_C_COMM[4][1] = 0.70157068;
+        G_C_COMM[1][5] = 0.33526012;            G_C_COMM[5][1] = 0.33526012;
+        G_C_COMM[1][6] = 0.05263158;            G_C_COMM[6][1] = 0.05263158;
+        G_C_COMM[1][7] = 0.02702703;            G_C_COMM[7][1] = 0.02702703;
+        G_C_COMM[1][8] = 0.02702703;            G_C_COMM[8][1] = 0.02702703;
+
+        G_C_COMM[2][2] = 1.2432432;
+        G_C_COMM[2][3] = 0.2054054;             G_C_COMM[3][2] = 0.9863636;
+        G_C_COMM[2][4] = 0.4162162;             G_C_COMM[4][2] = 0.3979058;
+        G_C_COMM[2][5] = 0.3243243;             G_C_COMM[5][2] = 0.5375723;
+        G_C_COMM[2][6] = 0.05945946;            G_C_COMM[6][2] = 0.3301435;
+        G_C_COMM[2][7] = 0.06486486;            G_C_COMM[7][2] = 0.1351351;
+        G_C_COMM[2][8] = 0.06486486;            G_C_COMM[8][2] = 0.1351351;
+
+        G_C_COMM[3][3] = 0.7;
+        G_C_COMM[3][4] = 0.3272727;             G_C_COMM[4][3] = 0.6125654;
+        G_C_COMM[3][5] = 0.2318182;             G_C_COMM[5][3] = 0.3815029;
+        G_C_COMM[3][6] = 0.07272727;            G_C_COMM[6][3] = 0.3253589;
+        G_C_COMM[3][7] = 0.09545455;            G_C_COMM[7][3] = 0.1351351;
+        G_C_COMM[3][8] = 0.09545455;            G_C_COMM[8][3] = 0.1351351;
+
+        G_C_COMM[4][4] = 0.8429319;
+        G_C_COMM[4][5] = 0.3193717;             G_C_COMM[5][4] = 0.734104;
+        G_C_COMM[4][6] = 0.07329843;            G_C_COMM[6][4] = 0.2440191;
+        G_C_COMM[4][7] = 0.10994764;            G_C_COMM[7][4] = 0.1486486;
+        G_C_COMM[4][8] = 0.10994764;            G_C_COMM[8][4] = 0.1486486;
+
+        G_C_COMM[5][5] = 0.6589595;
+        G_C_COMM[5][6] = 0.05780347;            G_C_COMM[6][5] = 0.6602871;
+        G_C_COMM[5][7] = 0.23121387;            G_C_COMM[7][5] = 0.1351351;
+        G_C_COMM[5][8] = 0.23121387;            G_C_COMM[8][5] = 0.1351351;
+        
+        G_C_COMM[6][6] = 0.45933014;
+        G_C_COMM[6][7] = 0.215311;              G_C_COMM[7][6] = 0.27027027;
+        G_C_COMM[6][8] = 0.215311;              G_C_COMM[8][6] = 0.27027027;
+
+        G_C_COMM[7][7] = 1.01351351;
+        G_C_COMM[7][8] = 1.01351351;            G_C_COMM[8][7] = 1.01351351;
+
+        G_C_COMM[8][8] = 1.01351351;
+    }
+    
 
     for(int aci=0; aci<NUMAC; aci++){
         G_C_COMM[0][aci] *= G_CLO_CONTACT_COEFF_00;

@@ -18,8 +18,10 @@ enum parameter_index {i_N, i_beta, i_startday_beta, i_endday_beta, i_beta_hosp, 
                       i_vac1_eff_halflife, i_vac1_eff_slope, i_vac2_eff_halflife, i_vac2_eff_slope,
                       i_vac1_eff_halflife_pow_slope, i_vac2_eff_halflife_pow_slope, 
                       i_vac1_foi, i_vac2_foi,
-                      i_len_natural_immunity,
+                      i_len_natural_immunity, i_reporting_rate,
                       num_params}; 
+
+enum contact_matrix_loc {be, uk, ukbe, num_contact_matrix_loc};
 
 typedef enum parameter_index prm_index;
 
@@ -79,7 +81,7 @@ public:
     // vector< vector<double> > v_rel_sus_Z_2;         // relative susceptibility at each stage in NUMZ_2 stages for each age group
     // vector<double> v_rel_eff_Z_2;         // relative efficacy for each age group; default is 1.0 for everyone
 
-
+    int cm_loc = (int)(contact_matrix_loc::be); // default Belgium
 
 
     vector<double> v_pop_frac;        // population percentage breakdown by age group
