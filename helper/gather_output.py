@@ -55,7 +55,49 @@ def Read_txt_To_ndarray(output_dir,
     
     return all_sim_output
 
+
+
+## read simulation output (tab-delimited text) to sim_all_output ndarray
+## the default output_dir is Path(__file__).parent / output-agg
+## the default filename format is run_output_{}.tdl, e.g. run_output_0.tdl, run_output_1.tdl .... run_output_<total_sim - 1>.tdl
+## the default total_sim is 1000
+def Read_txt_To_ndarray_2(output_dir,
+                        total_sim=1000,
+                        traj_ncol=307,
+                        binary_output=False,
+                        death_rate_only=False,
+                        verbose=False):
+    # if filename_format is None:
+    #     filename_format = "run_{}.txt"
+    for roots, dirs, files in os.walk(os.path.abspath(output_dir)):
+        if roots == output_dir:
+            assert len(files) == total_sim, 'The output directory must containt exact {} files.'.format(total_sim)
+            file_path = os.path.abspath(output_dir + '/' + files[0])
+            # if verbose:
+                # print("read 0 :", Path(output_dir, filename_format.format(0)))
+                # print("read 0: ", file_path )
+            if binary_output: tmp_a = fromfile( file_path ).reshape((-1, traj_ncol))
+            else: tmp_a = genfromtxt(file_path, delimiter="\t")
+
+            if death_rate_only: all_sim_output = zeros((total_sim, tmp_a.shape[0]))
+            else: all_sim_output = zeros((total_sim, tmp_a.shape[0], tmp_a.shape[1]))
+            # all_sim_output[0] = tmp_a
+
+            for i, f in enumerate(files):
+                # print("read {}: {}".format(i, file_path) )
+                if i % 100 == 0 and verbose:
+                    print("read {}".format(i))        
+                file_path = os.path.abspath(output_dir + '/' + f)
+                if binary_output: all_sim_output[i] = fromfile( file_path ).reshape((-1, traj_ncol))
+                else: all_sim_output[i] = genfromtxt(file_path, delimiter="\t") 
+
+            if verbose:
+                # print("read", i, ":", Path(output_dir, filename_format.format(i)))
+                print("read {}: {}".format(i, file_path) )
     
+            print("total files read", i+1)
+    
+    return all_sim_output
 
 ###############################################
 if __name__ == "__main__":
@@ -127,18 +169,28 @@ if __name__ == "__main__":
         file_fmt = args.format
 
     sim_indices = covid_sim.COVID_SIM(cpp_dir).Get_Indices()
-    if args.death_rate_only: traj_ncol = 30
-    else: traj_ncol = int(sim_indices['DIMENSION']) + 1 # sim_indices['STARTK'] + sim_indices['NUMAC'] + 1
+    if args.sim_version < 6:
+        traj_ncol = sim_indices['STARTK'] + sim_indices['NUMAC'] + 1
+    else:
+        traj_ncol = int(sim_indices['DIMENSION']) + 1 # 
+    if args.death_rate_only: 
+        traj_ncol = 30
 
 
     ## print( Path(Path.cwd(), args.dir ) )
     ## all_output = Read_txt_To_ndarray(Path(os.getcwd(), args.dir ),
-    all_output = Read_txt_To_ndarray(os.path.abspath(os.getcwd() + '/' + args.dir),
+    # all_output = Read_txt_To_ndarray(os.path.abspath(os.getcwd() + '/' + args.dir),
+    #                                  total_sim=args.total, 
+    #                                  filename_format=file_fmt,
+    #                                  traj_ncol=traj_ncol,
+    #                                  binary_output=args.binary_output,
+    #                                  death_rate_only=args.death_rate_only)
+    all_output = Read_txt_To_ndarray_2(os.path.abspath(os.getcwd() + '/' + args.dir),
                                      total_sim=args.total, 
-                                     filename_format=file_fmt,
                                      traj_ncol=traj_ncol,
                                      binary_output=args.binary_output,
-                                     death_rate_only=args.death_rate_only)
+                                     death_rate_only=args.death_rate_only,
+                                     verbose=False)
 
     ## save aggregated array to file to retrieve later (first run)
     with open(args.output, 'wb') as dump_f:
